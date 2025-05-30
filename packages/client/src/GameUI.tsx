@@ -168,7 +168,7 @@ export function GameUI({
                   Agar.io, powered by <u>Reth</u>.
                   <br />
                   <br />
-                  Grow larger by eating food, avoid hitting a wall or being consumed by larger
+                  Grow larger by eating food and avoid hitting a wall or being consumed by a larger
                   player.
                   <br />
                   <br />
