@@ -9,7 +9,7 @@
     "start:auth": "tsx src/auth.ts",
     "start:indexer": "bash src/indexer.sh",
     "reset:indexer": "rm -f indexer.db",
-    "start": "pnpm reset:indexer && pm2 restart ecosystem.config.cjs"
+    "start": "pm2 start ecosystem.config.cjs"
   },
   "license": "MIT",
   "devDependencies": {
