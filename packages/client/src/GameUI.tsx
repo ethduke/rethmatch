@@ -207,6 +207,44 @@ export function GameUI({
                 mt={4}
               >
                 <Text fontWeight="bold" fontSize="lg">
+                  HOW TO GET STARTED
+                </Text>
+
+                <Text fontSize="sm" mt={2} mb={1} color="#808080">
+                  Read the guide below to learn how to sign up and get started.
+                </Text>
+
+                <Button
+                  mt={4}
+                  backgroundColor="#0D0D0D"
+                  borderColor="#00E893"
+                  borderWidth="1.5px"
+                  borderRadius="0"
+                  width="100%"
+                  height="42px"
+                  color="#00E893"
+                  p={4}
+                  _hover={{ opacity: 0.8 }}
+                  _active={{ opacity: 0.35 }}
+                  as="a"
+                  href="https://hackmd.io/@t11s/rethmatch"
+                  target="_blank"
+                >
+                  LEARN HOW{" "}
+                  <Robot style={{ marginBottom: "2px", fill: "#00FF99", marginLeft: "12px" }} />
+                </Button>
+              </Box>
+
+              <Box
+                border="1px"
+                borderColor="#1A1A1A"
+                backgroundColor="#0D0D0D"
+                p={4}
+                width="100%"
+                mt={4}
+                mb={4}
+              >
+                <Text fontWeight="bold" fontSize="lg">
                   QUICK LINKS
                 </Text>
 
@@ -253,44 +291,6 @@ export function GameUI({
                     </Text>
                   </Text>
                 </Box>
-              </Box>
-
-              <Box
-                border="1px"
-                borderColor="#1A1A1A"
-                backgroundColor="#0D0D0D"
-                p={4}
-                width="100%"
-                mt={4}
-                mb={4}
-              >
-                <Text fontWeight="bold" fontSize="lg">
-                  HOW TO GET STARTED
-                </Text>
-
-                <Text fontSize="sm" mt={2} mb={1} color="#808080">
-                  Read the guide below to learn how to sign up and get started.
-                </Text>
-
-                <Button
-                  mt={4}
-                  backgroundColor="#0D0D0D"
-                  borderColor="#00E893"
-                  borderWidth="1.5px"
-                  borderRadius="0"
-                  width="100%"
-                  height="42px"
-                  color="#00E893"
-                  p={4}
-                  _hover={{ opacity: 0.8 }}
-                  _active={{ opacity: 0.35 }}
-                  as="a"
-                  href="https://hackmd.io/@t11s/rethmatch"
-                  target="_blank"
-                >
-                  LEARN HOW{" "}
-                  <Robot style={{ marginBottom: "2px", fill: "#00FF99", marginLeft: "12px" }} />
-                </Button>
               </Box>
             </Column>
           ) : null}
