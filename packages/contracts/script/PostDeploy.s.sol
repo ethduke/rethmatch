@@ -37,7 +37,7 @@ contract PostDeploy is Script {
 
         uint8 highScoreTopK = 10;
 
-        address accessSigner = 0x0000000000000000000000000000000000000000;
+        address accessSigner = 0x518df905D5E7E7C74B41f178fB078ea028A79cC3;
 
         GameConfig.set(
             GameConfigData({
