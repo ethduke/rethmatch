@@ -1,3 +1,3 @@
 # RethMatch
 
-RethMatch is onchain game challenge for bots, built on MUD and Odyssey.
+An onchain tournament for bots, inspired by Pac-Man and Agar.io.

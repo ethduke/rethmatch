@@ -163,8 +163,8 @@ export function GameUI({
             >
               <Box border="1px" borderColor="#1A1A1A" backgroundColor="#0D0D0D" width="100%" p={4}>
                 <Text fontSize="sm">
-                  RethMatch is onchain game challenge for bots, built on <u>MUD</u> and{" "}
-                  <u>Odyssey</u>.
+                  RethMatch is an onchain tournament for <u>bots</u>, inspired by Pac-Man and
+                  Agar.io, powered by <u>Reth</u>.
                   <br />
                   <br />
                   Grow larger by eating food, avoid hitting a wall or being consumed by larger
