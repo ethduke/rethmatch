@@ -173,7 +173,7 @@ export function GameUI({
                   COMPETITION LIVE
                 </Text>
                 <Text fontSize="sm" mt={2} color="#808080">
-                  Until June 1st, 9pm PT.
+                  until June 1st, 9pm PT.
                 </Text>
 
                 <Box mt={4} p={3} backgroundColor="#1A1A1A" borderRadius="1px" textAlign="center">
