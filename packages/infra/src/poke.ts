@@ -19,15 +19,15 @@ const publicClient = createPublicClient({
   cacheTime: 100,
 });
 
-const privateKey = process.env.PRIVATE_KEY as `0x${string}`;
+const privateKey = process.env.POKING_PRIVATE_KEY as `0x${string}`;
 if (!privateKey) {
-  throw new Error("PRIVATE_KEY is not set");
+  throw new Error("POKING_PRIVATE_KEY is not set");
 }
 
 const account = privateKeyToAccount(privateKey);
 
 console.log(
-  "Account address:",
+  "Poking account address:",
   account.address,
   "balance:",
   await publicClient.getBalance({ address: account.address })
