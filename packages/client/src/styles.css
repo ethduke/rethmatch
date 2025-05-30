@@ -1,0 +1,184 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: black !important;
+}
+
+@font-face {
+  font-family: "BerkeleyMono";
+  src: url("./fonts/BerkeleyMonoVariable-Regular.woff2") format("woff2-variations");
+  font-display: swap;
+  font-weight: 100;
+}
+
+.lineContainer {
+  position: relative;
+}
+
+.lineContainer::before {
+  content: "";
+  position: absolute;
+  top: calc(50% - var(--line-thickness) / 2);
+  height: var(--line-thickness);
+  width: 100%;
+  background-color: #4d4d4d;
+}
+
+.line {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.entity {
+  border-radius: 50%;
+  position: absolute;
+}
+
+.wall {
+  border-radius: 0%;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.dot-1 {
+  animation: blink 0.5s infinite 0s;
+}
+.dot-2 {
+  animation: blink 0.5s infinite 0.165s;
+}
+.dot-3 {
+  animation: blink 0.5s infinite 0.33s;
+}
+
+@keyframes sideLoadingAnimation {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes glow00bcff {
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px #00bcff,
+      0 0 30px #00bcff;
+  }
+  50% {
+    box-shadow:
+      0 0 0px #00bcff,
+      0 0 0px #00bcff;
+  }
+}
+
+@keyframes glowffc000 {
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px #ffc000,
+      0 0 30px #ffc000;
+  }
+  50% {
+    box-shadow:
+      0 0 0px #ffc000,
+      0 0 0px #ffc000;
+  }
+}
+
+@keyframes glowff5700 {
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px #ff5700,
+      0 0 30px #ff5700;
+  }
+  50% {
+    box-shadow:
+      0 0 0px #ff5700,
+      0 0 0px #ff5700;
+  }
+}
+
+.glowff00ff {
+  box-shadow:
+    0 0 10px #ff00ff,
+    0 0 30px #ff00ff !important;
+}
+
+@keyframes glowff00ff {
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px #ff00ff,
+      0 0 30px #ff00ff;
+  }
+  50% {
+    box-shadow:
+      0 0 0px #ff00ff,
+      0 0 0px #ff00ff;
+  }
+}
+
+@keyframes glow00e893 {
+  0%,
+  100% {
+    box-shadow:
+      0 0 10px #00e893,
+      0 0 30px #00e893;
+  }
+  50% {
+    box-shadow:
+      0 0 0px #00e893,
+      0 0 0px #00e893;
+  }
+}
+
+@keyframes blinkMild {
+  0% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.chakra-alert {
+  /* background-color: #ff0420 !important; */
+  background-color: #ff5700 !important;
+}
+
+.chakra-alert__desc {
+  padding-right: 25px;
+}
+
+.disableScrollBar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.disableScrollBar::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
+
+.fadeBottom {
+  -webkit-mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 95%, transparent 100%);
+}

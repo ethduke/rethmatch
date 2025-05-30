@@ -1,0 +1,23 @@
+{
+  "name": "rethmatch",
+  "private": true,
+  "scripts": {
+    "build": "pnpm recursive run build",
+    "dev:client": "pnpm --filter 'client' run dev",
+    "deploy:contracts": "pnpm --filter 'contracts' deploy:odyssey",
+    "mud:up": "pnpm mud set-version --tag main && pnpm install"
+  },
+  "devDependencies": {
+    "@latticexyz/cli": "2.2.22-3baa3fd86f5917471729ba6551f12c17cdca53e3",
+    "@types/debug": "4.1.7",
+    "@typescript-eslint/eslint-plugin": "7.1.1",
+    "@typescript-eslint/parser": "7.1.1",
+    "eslint": "8.57.0",
+    "rimraf": "^3.0.2",
+    "typescript": "5.4.2"
+  },
+  "engines": {
+    "node": "^18",
+    "pnpm": "^8 || ^9"
+  }
+}

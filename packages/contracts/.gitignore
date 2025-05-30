@@ -1,0 +1,12 @@
+out/*
+!out/IWorld.sol/
+cache/
+node_modules/
+bindings/
+artifacts/
+broadcast/
+.mud/
+
+# Ignore MUD deploy artifacts
+deploys/**/*.json
+
