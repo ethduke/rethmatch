@@ -59,7 +59,9 @@ app.post("/generateAccessSignature", requireAuth(), async (req, res) => {
 
   const accessSignature = await sign({
     // getAddress() is used to ensure the address is in the correct checksum format.
-    hash: keccak256(encodePacked(["address", "string"], [getAddress(address), clerkUser.username])),
+    hash: keccak256(
+      encodePacked(["address", "string"], [getAddress(address), clerkUser.username.toLowerCase()])
+    ),
     privateKey: signingPrivateKey,
     to: "hex",
   });
