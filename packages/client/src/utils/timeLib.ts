@@ -64,8 +64,9 @@ async function syncClockOffset() {
       for (let attempts = 0; attempts < 5; attempts++) {
         const { netClockOffset, systemOffset, oneWayLatencyEstimate } = await computeClockOffset();
 
-        // If the estimated one way latency estimate was less than 100ms, we'll accept the measurement.
-        if (oneWayLatencyEstimate < 100) {
+        // Gradually increase the threshold for how long the round trip
+        // can take, as we become more confident in the measurement.
+        if (oneWayLatencyEstimate < (attempts + 1) * 500) {
           CHAIN_TIMESTAMP_OFFSET_MS.value = Math.floor(netClockOffset);
           ONE_WAY_LATENCY_ESTIMATE_MS.value = Math.floor(oneWayLatencyEstimate);
 
@@ -78,23 +79,14 @@ async function syncClockOffset() {
         }
 
         // If it was longer, we'll try again, hopefully was just a transient issue.
-        console.log("Round trip took dangerously long, retrying...");
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        console.log(
+          `Round trip took strangely long (${oneWayLatencyEstimate.toFixed(2)}ms), retrying...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 250));
       }
-
-      // If we've reached this point, the round trip to the timeserver consistently took
-      // more than 150ms. This level of latency makes it difficult to trust the accuracy of
-      // the clock offset sync. A bad sync can make the game unplayable. We'll alert the user.
-      console.warn("Network has really high latency, alerting user...");
-      alert(`🕖 Your network has significant latency (>150ms).
-
-👾 This will heavily degrade game performance and/or cause glitches.
-
-🛜 Try switching networks, disabling any VPNs, and/or restarting your computer.
-
-🔄 Refresh the page to try again.`);
     } catch (error) {
       console.error("Clock offset sync failed:", error);
+      alert("🕖 Clock offset sync failed, please refresh the page. Contact us if this persists.");
     }
   }
 }
