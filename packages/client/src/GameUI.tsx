@@ -88,7 +88,7 @@ export function GameUI({
           {isMobile ? null : (
             <>
               <SignedOut>
-                <SignInButton>
+                <SignInButton forceRedirectUrl={window.location.href}>
                   <Button
                     mt={4}
                     backgroundColor="#FF5700"
