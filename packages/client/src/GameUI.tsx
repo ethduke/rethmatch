@@ -267,13 +267,13 @@ export function GameUI({
                     •{" "}
                     <Text
                       as="a"
-                      href="https://x.com/paradigmxyz"
+                      href="https://x.com/transmissions11/status/1928529682116513798"
                       target="_blank"
                       color="#00E893"
                       _hover={{ opacity: 0.8 }}
                       textDecoration="underline"
                     >
-                      Twitter
+                      X/Twitter
                     </Text>
                   </Text>
 
