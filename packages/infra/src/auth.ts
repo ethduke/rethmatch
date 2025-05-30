@@ -4,7 +4,7 @@ import { clerkClient, requireAuth, getAuth, clerkMiddleware } from "@clerk/expre
 import cors from "cors";
 import bodyParser from "body-parser";
 import { privateKeyToAccount, sign } from "viem/accounts";
-import { encodePacked, getAddress, keccak256 } from "viem";
+import { encodePacked, getAddress, isAddress, keccak256 } from "viem";
 
 const signingPrivateKey = process.env.SIGNING_PRIVATE_KEY as `0x${string}`;
 if (!signingPrivateKey) {
@@ -34,6 +34,10 @@ app.post("/generateAccessSignature", requireAuth(), async (req, res) => {
     res.status(400).json({ message: "Address is required" });
     return;
   }
+  if (!isAddress(address)) {
+    res.status(400).json({ message: "Invalid address" });
+    return;
+  }
 
   const { userId } = getAuth(req);
   if (!userId) {
@@ -52,6 +56,7 @@ app.post("/generateAccessSignature", requireAuth(), async (req, res) => {
   }
 
   const accessSignature = await sign({
+    // getAddress() is used to ensure the address is in the correct checksum format.
     hash: keccak256(encodePacked(["address", "string"], [getAddress(address), clerkUser.username])),
     privateKey: signingPrivateKey,
     to: "hex",
