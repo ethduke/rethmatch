@@ -117,7 +117,7 @@ body {
   }
 }
 
-.glowff00ff {
+/* .glowff00ff {
   box-shadow:
     0 0 10px #ff00ff,
     0 0 30px #ff00ff !important;
@@ -135,7 +135,7 @@ body {
       0 0 0px #ff00ff,
       0 0 0px #ff00ff;
   }
-}
+} */
 
 @keyframes glow00e893 {
   0%,
