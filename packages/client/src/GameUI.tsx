@@ -12,6 +12,7 @@ import { GameConfig } from "./utils/game/configLib";
 import { sum } from "./utils/bigintMinHeap";
 import { SignedIn, SignedOut, SignInButton, useAuth, UserButton } from "@clerk/clerk-react";
 import { isAddress } from "viem";
+import { useState } from "react";
 
 export function GameUI({
   liveState,
@@ -25,44 +26,56 @@ export function GameUI({
 
   const { getToken } = useAuth();
 
+  const [generatingAccessSignature, setGeneratingAccessSignature] = useState(false);
+
   const generateAccessSignature = async () => {
-    const address = prompt(
-      `🔗 Enter the Odyssey address you want to link your X account to.
+    setGeneratingAccessSignature(true);
 
-🚨 You cannot relink your account to a different address after linking.`,
-      "0x..."
-    );
-
-    if (!address || !isAddress(address)) {
-      alert("Invalid address. Try again.");
-      return;
-    }
+    await new Promise((resolve) => setTimeout(resolve, 50)); // Wait a sec so the loader can show.
 
     try {
-      const { accessSignature } = await fetch(
-        "https://rethmatch-auth.paradigm.xyz/generateAccessSignature",
-        {
+      const address = prompt(
+        `🔗 Enter the Odyssey address you want to link your X account to.
+
+📋 See the 'how to get started' section for more information.
+
+🚨 You cannot relink your account to a different address after linking.`,
+        "0x..."
+      );
+
+      if (!address || !isAddress(address)) {
+        alert("Invalid address. Try again.");
+        return;
+      }
+
+      try {
+        const res = await fetch("https://rethmatch-auth.paradigm.xyz/generateAccessSignature", {
           method: "POST",
           body: JSON.stringify({ address }),
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${await getToken()}`,
           },
-        }
-      ).then((res) => res.json());
+        }).then((res) => res.json());
 
-      if (!accessSignature) throw new Error("Undefined access signature.");
+        console.log(res);
 
-      prompt(
-        `🔏 Copy the access signature linking ${address.slice(0, 4)}...${address.slice(-4)} to your X account below.
+        if (!res.accessSignature)
+          throw new Error("Undefined access signature. Got response: " + JSON.stringify(res));
 
-📋 See the guide on bots for more information on how to use this.
+        prompt(
+          `🔏 Copy the access signature linking ${address.slice(0, 4)}...${address.slice(-4)} to your X account below.
+
+📋 See the 'how to get started' section for more information on how to use this.
 `,
-        accessSignature
-      );
-    } catch (error) {
-      alert("Failed to generate access signature: " + error);
-      return;
+          res.accessSignature
+        );
+      } catch (error) {
+        alert("Failed to generate access signature: " + error);
+        return;
+      }
+    } finally {
+      setGeneratingAccessSignature(false);
     }
   };
 
@@ -115,6 +128,7 @@ export function GameUI({
                   _hover={{ opacity: 0.8 }}
                   _active={{ opacity: 0.35 }}
                   onClick={generateAccessSignature}
+                  isLoading={generatingAccessSignature}
                 >
                   <UserButton /> <Text ml={2}>GENERATE ACCESS SIGNATURE</Text>
                 </Button>
