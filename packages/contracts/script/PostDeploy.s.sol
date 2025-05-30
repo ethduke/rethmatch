@@ -68,7 +68,7 @@ contract PostDeploy is Script {
             vm.rpc("evm_setNextBlockTimestamp", '["9999999999"]');
         }
 
-        IWorld(worldAddress).addLines(4);
+        IWorld(worldAddress).addLines(8);
 
         vm.stopBroadcast();
     }
