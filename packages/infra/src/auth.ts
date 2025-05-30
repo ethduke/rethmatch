@@ -55,6 +55,8 @@ app.post("/generateAccessSignature", requireAuth(), async (req, res) => {
     return;
   }
 
+  console.log("Generating access signature for:", clerkUser.username, "with address:", address);
+
   const accessSignature = await sign({
     // getAddress() is used to ensure the address is in the correct checksum format.
     hash: keccak256(encodePacked(["address", "string"], [getAddress(address), clerkUser.username])),
@@ -63,7 +65,9 @@ app.post("/generateAccessSignature", requireAuth(), async (req, res) => {
   });
 
   // Link the address to the user in Clerk for convenience.
-  await clerkClient.users.updateUserMetadata(userId, { publicMetadata: { address } });
+  await clerkClient.users.updateUserMetadata(userId, {
+    privateMetadata: { [Date.now().toString()]: address },
+  });
 
   res.json({ accessSignature: accessSignature });
 });
