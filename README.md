@@ -1,3 +1,3 @@
 # RethMatch
 
-RethMatch is on-chain game challenge for bots, built on MUD and Odyssey.
+RethMatch is onchain game challenge for bots, built on MUD and Odyssey.

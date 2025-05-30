@@ -149,7 +149,7 @@ export function GameUI({
             >
               <Box border="1px" borderColor="#1A1A1A" backgroundColor="#0D0D0D" width="100%" p={4}>
                 <Text fontSize="sm">
-                  RethMatch is on-chain game challenge for bots, built on <u>MUD</u> and{" "}
+                  RethMatch is onchain game challenge for bots, built on <u>MUD</u> and{" "}
                   <u>Odyssey</u>.
                   <br />
                   <br />
