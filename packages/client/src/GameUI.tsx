@@ -13,6 +13,7 @@ import { sum } from "./utils/bigintMinHeap";
 import { SignedIn, SignedOut, SignInButton, useAuth, UserButton } from "@clerk/clerk-react";
 import { isAddress } from "viem";
 import { useState } from "react";
+import { WORLD_ADDRESS } from "./common";
 
 export function GameUI({
   liveState,
@@ -228,7 +229,7 @@ export function GameUI({
                     •{" "}
                     <Text
                       as="a"
-                      href="TODO"
+                      href="https://x.com/paradigmxyz"
                       target="_blank"
                       color="#00E893"
                       _hover={{ opacity: 0.8 }}
@@ -242,7 +243,7 @@ export function GameUI({
                     •{" "}
                     <Text
                       as="a"
-                      href="TODO"
+                      href={`https://odyssey-explorer.ithaca.xyz/address/${WORLD_ADDRESS}`}
                       target="_blank"
                       color="#00E893"
                       _hover={{ opacity: 0.8 }}
