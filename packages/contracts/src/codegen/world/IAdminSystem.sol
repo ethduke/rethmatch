@@ -11,5 +11,7 @@ pragma solidity >=0.8.24;
 interface IAdminSystem {
   function addLines(uint32 numLinesToAdd) external;
 
-  function ban(address player, string memory username) external;
+  function banPlayer(address player) external;
+
+  function banUsername(string memory username) external;
 }

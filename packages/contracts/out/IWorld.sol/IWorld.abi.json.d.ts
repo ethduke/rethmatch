@@ -32,13 +32,21 @@ declare const abi: [
   },
   {
     "type": "function",
-    "name": "ban",
+    "name": "banPlayer",
     "inputs": [
       {
         "name": "player",
         "type": "address",
         "internalType": "address"
-      },
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "banUsername",
+    "inputs": [
       {
         "name": "username",
         "type": "string",

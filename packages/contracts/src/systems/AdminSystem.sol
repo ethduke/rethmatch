@@ -77,11 +77,13 @@ contract AdminSystem is System {
         GameState.setNumLines(targetNumLines);
     }
 
-    function ban(address player, string memory username) public {
+    function banPlayer(address player) public {
         // This field is overloaded to both manage access and to prevent spamming, here
         // we are using it for the former, setting it to a magic number which prevents access.
         Player.setLastJumpBlockNumber(EntityLib.toEntityId(player), type(uint32).max);
+    }
 
+    function banUsername(string memory username) public {
         // Set username hash to taken to prevent registering from succeeding.
         UsernameHash.set(keccak256(abi.encodePacked(username)), true);
     }
