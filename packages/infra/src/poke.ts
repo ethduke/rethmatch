@@ -85,7 +85,7 @@ for (let iteration = 0; ; iteration++) {
 
   for (let line = 0; line < numLines; line++) {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Sleep.
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Sleep.
 
       const tx = await client.writeContract({
         address: WORLD_ADDRESS,
