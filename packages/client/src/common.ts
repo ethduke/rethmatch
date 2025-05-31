@@ -17,7 +17,7 @@ export const WAGMI_CONFIG: Config = createConfig({
     createClient({
       chain,
       transport: fallback([http()]),
-      pollingInterval: 100,
+      pollingInterval: 500,
       cacheTime: 100,
     }),
 });
