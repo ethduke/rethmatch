@@ -1,4 +1,11 @@
-import { createPublicClient, http, fallback, webSocket, createWalletClient } from "viem";
+import {
+  createPublicClient,
+  http,
+  fallback,
+  webSocket,
+  createWalletClient,
+  formatGwei,
+} from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import "dotenv/config";
 
@@ -101,7 +108,7 @@ for (let iteration = 0; ; iteration++) {
             "poked — gas used:",
             Number(receipt.gasUsed).toLocaleString(),
             "gas price:",
-            Number(receipt.effectiveGasPrice).toLocaleString(),
+            formatGwei(receipt.effectiveGasPrice),
             "block:",
             receipt.blockNumber
           );
