@@ -99,7 +99,11 @@ for (let iteration = 0; ; iteration++) {
             "⛽️ Line",
             line,
             "poked — gas used:",
-            Number(receipt.gasUsed).toLocaleString()
+            Number(receipt.gasUsed).toLocaleString(),
+            "gas price:",
+            Number(receipt.effectiveGasPrice).toLocaleString(),
+            "block:",
+            receipt.blockNumber
           );
 
           if (receipt.status === "reverted") {
