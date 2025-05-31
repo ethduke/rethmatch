@@ -95,7 +95,7 @@ for (let iteration = 0; ; iteration++) {
         gas: 29_000_000n,
       });
 
-      console.log("📤 Poking line:", line);
+      console.log("📤 Poking line:", line, "with tx:", tx);
 
       publicClient
         .waitForTransactionReceipt({
@@ -110,7 +110,9 @@ for (let iteration = 0; ; iteration++) {
             "gas price:",
             formatGwei(receipt.effectiveGasPrice),
             "block:",
-            receipt.blockNumber
+            Number(receipt.blockNumber),
+            "hash:",
+            receipt.transactionHash.slice(0, 6) + "..." + receipt.transactionHash.slice(-4)
           );
 
           if (receipt.status === "reverted") {
