@@ -341,38 +341,31 @@ export function GameUI({
           className="disableScrollBar fadeBottom"
         >
           {(() => {
-            const allPlayers = new Map<string, { currentScore: number; archiveScore: number }>();
+            const playerScores = new Map<string, bigint[]>();
 
-            // Add players from current high scores.
+            // Start by populating with current scores.
             Array.from(liveState.gameState.highScores).forEach(([entityId, highScores]) => {
-              const username =
-                liveState.gameState.usernames.get(entityId) ??
-                ("UNKNOWN " + entityId.toString().slice(0, 4)).toUpperCase();
-
-              const currentScore = Math.floor(sum(highScores).fromWad());
-
-              allPlayers.set(username, {
-                currentScore,
-                archiveScore: leaderboardArchive[username as keyof typeof leaderboardArchive] || 0,
-              });
+              const username = liveState.gameState.usernames.get(entityId);
+              if (!username) throw new Error("Username not found for entityId: " + entityId);
+              playerScores.set(username, highScores as bigint[]);
             });
 
-            // Add players from archive who aren't already in current scores.
-            Object.entries(leaderboardArchive).forEach(([username, archiveScore]) => {
-              if (!allPlayers.has(username)) {
-                allPlayers.set(username, {
-                  currentScore: 0,
-                  archiveScore,
-                });
-              }
+            // Incorporate archived scores.
+            leaderboardArchive.forEach(({ username, highScores }) => {
+              const current = playerScores.get(username) || [];
+              const archived = highScores.map((score) => BigInt(score));
+              playerScores.set(username, [...current, ...archived]);
             });
 
             // Convert to array, calculate total scores, filter and sort.
-            return Array.from(allPlayers.entries())
-              .map(([username, data]) => ({
-                username,
-                totalScore: data.currentScore + data.archiveScore,
-              }))
+            return Array.from(playerScores.entries())
+              .map(([username, allScores]) => {
+                const playerTopKScores = allScores
+                  .sort((a, b) => Number(b - a))
+                  .slice(0, gameConfig.highScoreTopK);
+
+                return { username, totalScore: Math.floor(sum(playerTopKScores).fromWad()) };
+              })
               .filter((player) => player.totalScore > 0)
               .sort((a, b) => b.totalScore - a.totalScore)
               .map(({ username, totalScore }) => (

@@ -2,7 +2,7 @@
 // instead of using the specialized heap functions defined below.
 export type BigintMinHeap = readonly bigint[];
 
-export function sum(mh: BigintMinHeap): bigint {
+export function sum(mh: readonly bigint[]): bigint {
   return mh.reduce((acc, val) => acc + val, 0n);
 }
 
