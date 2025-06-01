@@ -1,3 +1,5 @@
+// See https://hackmd.io/@t11s/rethmatch for more info on how to get started!
+
 import "dotenv/config";
 import cliProgress from "cli-progress";
 import { http, fallback, webSocket, createPublicClient } from "viem";
