@@ -1,12 +1,13 @@
 import "dotenv/config";
+import cliProgress from "cli-progress";
 import { http, fallback, webSocket, createPublicClient } from "viem";
 import { Entity } from "../../client/src/utils/game/entityLib";
-import { LiveState } from "../../client/src/utils/sync";
+import { forwardStateTo, LiveState, parseSyncStateGivenTables } from "../../client/src/utils/sync";
 import { GameConfig } from "../../client/src/utils/game/configLib";
 
 import { stash } from "../../client/src/mud/stash";
-import { Stash } from "@latticexyz/stash/internal";
-import { syncToStash } from "@latticexyz/store-sync/internal";
+import { getRecord, getTable, Stash } from "@latticexyz/stash/internal";
+import { SyncProgress, syncToStash } from "@latticexyz/store-sync/internal";
 import { ODYSSEY_CHAIN } from "../../client/src/utils/chains";
 import Worlds from "../../contracts/worlds.json";
 
@@ -22,19 +23,19 @@ const publicClient = createPublicClient({
   cacheTime: 100,
 });
 
+const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+
 function botDecision(
-  bot: Entity,
   liveState: LiveState,
   gameConfig: GameConfig,
-  decision: "vertical" | "horizontal",
   wadTime: bigint
 ): [string, string] {
   // TODO
-  return ["up", "right"];
+  return ["up", "right"]; // [vertical, horizontal]
 }
 
 export async function main() {
-  syncToStash({
+  const { storedBlockLogs$ } = await syncToStash({
     stash: stash as Stash,
     startSync: true,
     address: WORLD_ADDRESS,
@@ -42,7 +43,45 @@ export async function main() {
     publicClient: publicClient as any,
     indexerUrl: chain.indexerUrl,
   });
+
+  // Initialize progress bar
+  progressBar.start(100, 0);
+
+  storedBlockLogs$.subscribe(() => {
+    const { syncProgress, data } = parseSyncStateGivenTables(stash.get());
+
+    if (syncProgress.step === "live" && data) {
+      if (progressBar.isActive) {
+        progressBar.update(100);
+        progressBar.stop();
+        console.log("Caught up!");
+      }
+
+      const { gameConfig, lines, lineStates, gameState } = data;
+
+      const syncedState = {
+        lastSyncedTime,
+        lastProcessedTime: -1n,
+        lines: data.lines,
+        lineStates: data.lineStates,
+        gameState: data.gameState,
+      };
+
+      const liveState = forwardStateTo(syncedState, gameConfig, false, null, {
+        stopAtIteration: 99999999999999,
+        stopAtTimestampWad: null,
+      });
+
+      console.log("Got block!", Number(syncProgress.latestBlockNumber));
+
+      const [vertical, horizontal] = botDecision(liveState, gameConfig, wadTime);
+    } else {
+      if (syncProgress.step === "snapshot") progressBar.update(0);
+      else progressBar.update(Math.round(syncProgress.percentage));
+    }
+  });
 }
 
-console.log("Starting bot...", WORLD_ADDRESS, START_BLOCK);
+console.log("Starting bot... (this may take a couple seconds)", WORLD_ADDRESS, START_BLOCK);
+console.log();
 await main();
