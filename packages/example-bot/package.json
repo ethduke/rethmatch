@@ -1,0 +1,21 @@
+{
+  "name": "example-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsx src/bot.ts"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "@types/yargs": "^17.0.32",
+    "tsx": "^4.16.2"
+  },
+  "dependencies": {
+    "@franciscokloganb/local-storage-polyfill": "^0.1.0",
+    "viem": "^2.29.1",
+    "yargs": "^17.7.2"
+  }
+}
