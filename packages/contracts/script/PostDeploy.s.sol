@@ -6,7 +6,6 @@ import {StoreSwitch} from "@latticexyz/store/src/StoreSwitch.sol";
 
 import {IWorld} from "../src/codegen/world/IWorld.sol";
 
-import {timeWad} from "../src/utils/WadTimeLib.sol";
 import {EntityLib} from "../src/utils/EntityLib.sol";
 import {ConfigLib} from "../src/utils/ConfigLib.sol";
 
