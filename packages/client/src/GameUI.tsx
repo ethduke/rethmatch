@@ -194,7 +194,7 @@ export function GameUI({
 
                 <Box mt={4} p={3} backgroundColor="#1A1A1A" borderRadius="1px" textAlign="center">
                   <Text fontSize="xl" fontWeight="bold" color="#00E893" fontFamily="monospace">
-                    <Countdown targetDate="2025-06-01T21:00:00-08:00" />
+                    <Countdown targetDate="2025-06-01T21:00:00-07:00" />
                   </Text>
                 </Box>
               </Box>
