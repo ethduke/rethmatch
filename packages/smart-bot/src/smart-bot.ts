@@ -1,5 +1,4 @@
-// Smart RethMatch Bot - Using MUD sync system with proper onBlock logic
-// Based on the example bot structure but with intelligent game decisions
+// Smart RethMatch Bot - Using MUD sync system with intelligent game decisions
 
 import "dotenv/config";
 import cliProgress from "cli-progress";
@@ -9,13 +8,10 @@ import {
   webSocket,
   createPublicClient, 
   createWalletClient, 
-  type Address,
-  type PublicClient,
   type WalletClient
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-// MUD imports (like example bot)
 import { forwardStateTo, LiveState, parseSyncStateGivenTables } from "../../client/src/utils/sync";
 import { EntityType } from "../../client/src/utils/game/entityLib";
 import { GameConfig } from "../../client/src/utils/game/configLib";
@@ -28,25 +24,21 @@ import { Stash } from "@latticexyz/stash/internal";
 
 import Worlds from "../../contracts/worlds.json";
 
-// Setup chain and world
 const chain = ODYSSEY_CHAIN;
 const WORLD_ADDRESS = Worlds[chain.id]?.address as `0x${string}`;
 if (!WORLD_ADDRESS) throw new Error(`No world address found for chain ${chain.id}`);
 const START_BLOCK = Worlds[chain.id]!.blockNumber!;
 
-// Bot configuration
 const PRIVATE_KEY = process.env.PRIVATE_KEY as `0x${string}`;
 if (!PRIVATE_KEY) throw new Error("PRIVATE_KEY environment variable is required");
 
 const account = privateKeyToAccount(PRIVATE_KEY);
 
-// Bot state for tracking decisions
 interface BotState {
   isAlive: boolean;
   currentLine: number;
   lastAction: string;
   lastActionTime: bigint;
-  strategy: 'hunt' | 'flee' | 'collect' | 'powerup';
   myEntityId: bigint | null;
   actionCooldown: bigint;
   consecutiveFailures: number;
@@ -57,20 +49,17 @@ let botState: BotState = {
   currentLine: 0,
   lastAction: 'none',
   lastActionTime: 0n,
-  strategy: 'collect',
   myEntityId: null,
-  actionCooldown: 2_000_000_000_000_000_000n, // 2 seconds default cooldown
+  actionCooldown: 2_000_000_000_000_000_000n,
   consecutiveFailures: 0,
 };
 
-// Create wallet client for transactions
 const walletClient: WalletClient = createWalletClient({
   account,
   chain,
-  transport: http("https://odyssey.ithaca.xyz"), // Use HTTP only for transactions
+  transport: http("https://odyssey.ithaca.xyz"),
 });
 
-// Utility functions
 function computeEntityId(address: string): bigint {
   const seed = BigInt(address);
   const UINT144_MAX = (1n << 144n) - 1n;
@@ -82,7 +71,6 @@ function rightmostEntityId(line: number): bigint {
   return UINT152_MAX + BigInt(line);
 }
 
-// Smart contract ABIs
 const SPAWN_ABI = [
   {
     name: "spawn",
@@ -117,35 +105,29 @@ const JUMP_ABI = [
   }
 ] as const;
 
-// MAIN BOT LOGIC - This is called every block with real game state
 function onBlock(liveState: LiveState, gameConfig: GameConfig, wadTime: bigint) {
   const { lines, gameState } = liveState;
   
-  console.log(`\n🎮 Block update received - Current time: ${wadTime}`);
+  console.log(`\n🎮 Block update - Time: ${wadTime}`);
   
-  // Initialize our entity ID if not set
   if (!botState.myEntityId) {
     botState.myEntityId = computeEntityId(account.address);
     console.log("🆔 Bot Entity ID:", botState.myEntityId);
   }
   
-  // Find our bot in the game state
   const myEntity = findMyEntity(lines, botState.myEntityId);
   
   if (myEntity) {
-    // Bot is alive!
     if (!botState.isAlive) {
       console.log("✅ Bot is now ALIVE!");
       botState.isAlive = true;
     }
     
     botState.currentLine = myEntity.lineId;
-    console.log(`🤖 Bot alive on line ${botState.currentLine}, mass: ${myEntity.mass}`);
+    console.log(`🤖 Bot on line ${botState.currentLine}, mass: ${myEntity.mass}`);
     
-    // Analyze the current situation and make a decision
     const decision = analyzeGameStateAndDecide(lines, myEntity, gameConfig, wadTime);
     
-    // Execute decision if enough time has passed
     const timeSinceLastAction = wadTime - botState.lastActionTime;
     if (timeSinceLastAction >= botState.actionCooldown) {
       console.log(`🧠 DECISION: ${decision.reasoning}`);
@@ -156,16 +138,14 @@ function onBlock(liveState: LiveState, gameConfig: GameConfig, wadTime: bigint) 
     }
     
   } else {
-    // Bot is dead or not spawned
     if (botState.isAlive) {
       console.log("💀 Bot died!");
       botState.isAlive = false;
-      botState.consecutiveFailures = 0; // Reset on death
+      botState.consecutiveFailures = 0;
     }
     
-    // Try to spawn if enough time has passed
     const timeSinceLastAction = wadTime - botState.lastActionTime;
-    const spawnCooldown = 5_000_000_000_000_000_000n; // 5 seconds between spawn attempts
+    const spawnCooldown = 5_000_000_000_000_000_000n;
     
     if (timeSinceLastAction >= spawnCooldown) {
       console.log("🔄 Attempting to spawn...");
@@ -176,11 +156,9 @@ function onBlock(liveState: LiveState, gameConfig: GameConfig, wadTime: bigint) 
     }
   }
   
-  // Show game state info (like example bot)
   showGameStateInfo(lines, gameState);
 }
 
-// Find our bot entity in the game state
 function findMyEntity(lines: any[][], myEntityId: bigint) {
   for (const line of lines) {
     if (!line) continue;
@@ -190,168 +168,167 @@ function findMyEntity(lines: any[][], myEntityId: bigint) {
   return null;
 }
 
-// Analyze game state and make intelligent decisions
 function analyzeGameStateAndDecide(lines: any[][], myEntity: any, gameConfig: GameConfig, wadTime: bigint) {
   const currentLine = myEntity.lineId;
   const myMass = myEntity.mass;
   
-  // Strategy 1: EMERGENCY ESCAPE from dangerous edge lines
-  if (currentLine <= 1) {
-    return {
-      action: 'jump' as const,
-      details: { up: false },
-      reasoning: `EMERGENCY: Escaping dangerous top edge line ${currentLine}`
-    };
-  }
+  // Define all possible actions
+  const possibleActions = [
+    { type: 'jump', up: true, targetLine: currentLine - 1, direction: 'UP' },
+    { type: 'jump', up: false, targetLine: currentLine + 1, direction: 'DOWN' },
+    { type: 'direction', velRight: false, targetLine: currentLine, direction: 'LEFT' },
+    { type: 'direction', velRight: true, targetLine: currentLine, direction: 'RIGHT' }
+  ];
   
-  if (currentLine >= 6) {
-    return {
-      action: 'jump' as const,
-      details: { up: true },
-      reasoning: `EMERGENCY: Escaping dangerous bottom edge line ${currentLine}`
-    };
-  }
+  // Score all actions
+  const scoredActions = possibleActions.map(action => scoreAction(lines, action, currentLine, myMass));
   
-  // Strategy 2: Look for threats and opportunities on current line
-  const currentLineEntities = lines[currentLine] || [];
-  const threats = currentLineEntities.filter(e => 
-    e.etype === EntityType.ALIVE && 
-    e.entityId !== myEntity.entityId && 
-    e.mass > myMass
-  );
+  // Sort by score and pick the best
+  scoredActions.sort((a, b) => b.score - a.score);
+  const best = scoredActions[0];
   
-  const food = currentLineEntities.filter(e => e.etype === EntityType.FOOD);
-  const powerPellets = currentLineEntities.filter(e => e.etype === EntityType.POWER_PELLET);
+  console.log(`🎯 Action scores: ${scoredActions.map(a => `${a.reasoning.split(':')[0]}:${a.score}`).join(', ')}`);
   
-  // Strategy 3: If there are threats, consider escaping vertically
-  if (threats.length > 0) {
-    const shouldEscape = Math.random() < 0.4; // 40% chance to escape
-    if (shouldEscape) {
-      const escapeUp = currentLine > 3; // Escape toward center
-      return {
-        action: 'jump' as const,
-        details: { up: escapeUp },
-        reasoning: `THREAT DETECTED: ${threats.length} larger players, escaping ${escapeUp ? 'UP' : 'DOWN'}`
-      };
-    }
-  }
-  
-  // Strategy 4: Hunt for power pellets if available
-  if (powerPellets.length > 0) {
-    const moveRight = Math.random() > 0.5;
-    return {
-      action: 'direction' as const,
-      details: { velRight: moveRight },
-      reasoning: `POWER HUNT: Moving ${moveRight ? 'RIGHT' : 'LEFT'} toward ${powerPellets.length} power pellets`
-    };
-  }
-  
-  // Strategy 5: Collect food if safe
-  if (food.length > 0 && threats.length === 0) {
-    const moveRight = Math.random() > 0.5;
-    return {
-      action: 'direction' as const,
-      details: { velRight: moveRight },
-      reasoning: `SAFE FEEDING: Moving ${moveRight ? 'RIGHT' : 'LEFT'} toward ${food.length} food items`
-    };
-  }
-  
-  // Strategy 6: Explore other lines for opportunities
-  const shouldExplore = Math.random() < 0.3; // 30% chance to explore
-  if (shouldExplore) {
-    // Look for lines with more food/power pellets
-    let bestLine = currentLine;
-    let bestScore = (food.length * 2) + (powerPellets.length * 5);
-    
-    for (let lineId = 0; lineId < lines.length; lineId++) {
-      if (lineId === currentLine || !lines[lineId]) continue;
-      
-      const lineFood = lines[lineId].filter(e => e.etype === EntityType.FOOD).length;
-      const linePellets = lines[lineId].filter(e => e.etype === EntityType.POWER_PELLET).length;
-      const lineScore = (lineFood * 2) + (linePellets * 5);
-      
-      if (lineScore > bestScore) {
-        bestScore = lineScore;
-        bestLine = lineId;
-      }
-    }
-    
-    if (bestLine !== currentLine) {
-      const jumpUp = bestLine < currentLine;
-      return {
-        action: 'jump' as const,
-        details: { up: jumpUp },
-        reasoning: `EXPLORATION: Jumping ${jumpUp ? 'UP' : 'DOWN'} to line ${bestLine} (score: ${bestScore})`
-      };
-    }
-  }
-  
-  // Strategy 7: Default safe movement
-  const moveRight = Math.random() > 0.4; // Slight right bias
   return {
-    action: 'direction' as const,
-    details: { velRight: moveRight },
-    reasoning: `SAFE MOVEMENT: Moving ${moveRight ? 'RIGHT' : 'LEFT'} on line ${currentLine}`
+    action: best.action,
+    details: best.details,
+    reasoning: best.reasoning
   };
 }
 
-// Execute the decision
+function scoreAction(lines: any[][], action: any, currentLine: number, myMass: number) {
+  const { type, targetLine, direction } = action;
+  
+  // Check bounds and emergency conditions
+  if (targetLine < 0) {
+    return { action: type, details: getActionDetails(action), score: -1000, reasoning: `${direction}: Out of bounds` };
+  }
+  if (targetLine >= lines.length) {
+    return { action: type, details: getActionDetails(action), score: -1000, reasoning: `${direction}: Out of bounds` };
+  }
+  
+  // Emergency escape from edge lines
+  if (currentLine <= 1 && type === 'jump' && !action.up) {
+    return { action: type, details: getActionDetails(action), score: 1000, reasoning: `${direction}: EMERGENCY escape from top` };
+  }
+  if (currentLine >= 6 && type === 'jump' && action.up) {
+    return { action: type, details: getActionDetails(action), score: 1000, reasoning: `${direction}: EMERGENCY escape from bottom` };
+  }
+  
+  // Score the target line opportunity
+  return scoreLineOpportunity(lines, targetLine, myMass, type, getActionDetails(action), direction);
+}
+
+function getActionDetails(action: any) {
+  if (action.type === 'jump') {
+    return { up: action.up };
+  } else {
+    return { velRight: action.velRight };
+  }
+}
+
+// Score the opportunity value of a specific line
+function scoreLineOpportunity(lines: any[][], lineId: number, myMass: number, action: string, details: any, direction: string): any {
+  const entities = lines[lineId] || [];
+  
+  // Count entities
+  const threats = entities.filter(e => e.etype === EntityType.ALIVE && e.mass > myMass).length;
+  const prey = entities.filter(e => e.etype === EntityType.ALIVE && e.mass < myMass).length;
+  const food = entities.filter(e => e.etype === EntityType.FOOD).length;
+  const powerPellets = entities.filter(e => e.etype === EntityType.POWER_PELLET).length;
+  const totalPlayers = entities.filter(e => e.etype === EntityType.ALIVE).length;
+  
+  // Calculate score
+  let score = 0;
+  score += powerPellets * 50;                           // Power pellets priority
+  score += food * (threats === 0 ? 10 : 2);            // Food value depends on safety
+  score += prey * 20;                                   // Prey value
+  score -= threats * 30;                                // Threat penalty
+  score += (lineId >= 2 && lineId <= 5) ? 5 : 0;       // Center line bonus
+  score -= (totalPlayers > 3) ? 10 : 0;                // Overcrowding penalty
+  
+  const items = [
+    powerPellets > 0 ? `${powerPellets}P` : '',
+    food > 0 ? `${food}F` : '',
+    prey > 0 ? `${prey}prey` : '',
+    threats > 0 ? `${threats}threats` : ''
+  ].filter(Boolean).join(',');
+  
+  return {
+    action: action as 'jump' | 'direction',
+    details,
+    score,
+    reasoning: `${direction}(${items || 'empty'})`
+  };
+}
+
 async function executeDecision(decision: any) {
   try {
     botState.lastActionTime = timeWad();
     
-    switch (decision.action) {
-      case 'direction':
-        await executeDirectionChange(decision.details.velRight);
-        botState.lastAction = `direction_${decision.details.velRight ? 'right' : 'left'}`;
-        break;
-        
-      case 'jump':
-        await executeJump(decision.details.up);
-        botState.lastAction = `jump_${decision.details.up ? 'up' : 'down'}`;
-        // Update estimated line position
-        if (botState.isAlive) {
-          botState.currentLine = decision.details.up ? 
-            Math.max(0, botState.currentLine - 1) : 
-            Math.min(7, botState.currentLine + 1);
-        }
-        break;
+    const hash = await executeAction(decision.action, decision.details);
+    console.log(`✅ ${decision.action === 'jump' ? 'Jumped' : 'Direction changed'}:`, hash);
+    
+    botState.lastAction = decision.action === 'jump' ? 
+      `jump_${decision.details.up ? 'up' : 'down'}` : 
+      `direction_${decision.details.velRight ? 'right' : 'left'}`;
+    
+    if (decision.action === 'jump' && botState.isAlive) {
+      botState.currentLine = decision.details.up ? 
+        Math.max(0, botState.currentLine - 1) : 
+        Math.min(7, botState.currentLine + 1);
     }
     
-    // Success - reset failure counter and reduce cooldown
     botState.consecutiveFailures = 0;
-    botState.actionCooldown = 1_500_000_000_000_000_000n; // 1.5s on success
+    botState.actionCooldown = 1_500_000_000_000_000_000n;
     
   } catch (error: any) {
     console.error("❌ Decision execution failed:", error.message?.substring(0, 100) || 'Unknown error');
     
-    // Handle death
     if (error.message?.includes('CALLER_IS_NOT_ALIVE') || error.message?.includes('caller is not alive')) {
       console.log("💀 Bot died during action!");
       botState.isAlive = false;
     }
     
-    // Increase cooldown on failure
     botState.consecutiveFailures++;
-    const maxCooldown = 5_000_000_000_000_000_000n; // Max 5 seconds
+    const maxCooldown = 5_000_000_000_000_000_000n;
     const additionalCooldown = BigInt(botState.consecutiveFailures) * 500_000_000_000_000_000n;
     const newCooldown = botState.actionCooldown + additionalCooldown;
     botState.actionCooldown = newCooldown > maxCooldown ? maxCooldown : newCooldown;
   }
 }
 
-// Attempt to spawn the bot
+async function executeAction(actionType: string, details: any) {
+  if (actionType === 'jump') {
+    return await walletClient.writeContract({
+      address: WORLD_ADDRESS,
+      abi: JUMP_ABI,
+      functionName: 'jumpToLine',
+      args: [details.up],
+      chain,
+      account,
+    });
+  } else {
+    return await walletClient.writeContract({
+      address: WORLD_ADDRESS,
+      abi: DIRECTION_ABI,
+      functionName: 'setDirection',
+      args: [details.velRight],
+      chain,
+      account,
+    });
+  }
+}
+
 async function attemptSpawn(lines: any[][]) {
   try {
-    // Choose spawn line - prefer lines 2,4 (corners) but analyze safety
     const cornerLines = [2, 4];
     let bestLine = cornerLines[Math.floor(Math.random() * cornerLines.length)];
     
-    // Quick safety check - avoid lines with many players
     for (const lineId of cornerLines) {
       const lineEntities = lines[lineId] || [];
       const alivePlayers = lineEntities.filter(e => e.etype === EntityType.ALIVE).length;
-      if (alivePlayers < 3) { // Less crowded
+      if (alivePlayers < 3) {
         bestLine = lineId;
         break;
       }
@@ -378,43 +355,13 @@ async function attemptSpawn(lines: any[][]) {
       botState.isAlive = true;
     } else if (error.message?.includes('NO_ACCESS')) {
       console.error("❌ Authentication required! Please complete X/Twitter linking first");
-      // Longer cooldown for auth issues
-      botState.actionCooldown = 30_000_000_000_000_000_000n; // 30 seconds
+      botState.actionCooldown = 30_000_000_000_000_000_000n;
     } else {
       console.error("❌ Spawn failed:", error.message?.substring(0, 100) || 'Unknown error');
     }
   }
 }
 
-// Execute direction change
-async function executeDirectionChange(velRight: boolean) {
-  const hash = await walletClient.writeContract({
-    address: WORLD_ADDRESS,
-    abi: DIRECTION_ABI,
-    functionName: "setDirection",
-    args: [velRight],
-    chain,
-    account,
-  });
-  
-  console.log(`✅ Direction changed to ${velRight ? 'RIGHT' : 'LEFT'}:`, hash);
-}
-
-// Execute jump
-async function executeJump(up: boolean) {
-  const hash = await walletClient.writeContract({
-    address: WORLD_ADDRESS,
-    abi: JUMP_ABI,
-    functionName: "jumpToLine",
-    args: [up],
-    chain,
-    account,
-  });
-  
-  console.log(`✅ Jumped ${up ? 'UP' : 'DOWN'}:`, hash);
-}
-
-// Show game state info (like example bot)
 function showGameStateInfo(lines: any[][], gameState: any) {
   lines.forEach((line, idx) => {
     if (!line) return;
@@ -434,7 +381,6 @@ function showGameStateInfo(lines: any[][], gameState: any) {
   });
 }
 
-// MAIN FUNCTION - Uses MUD sync system like example bot
 export async function main() {
   console.log("🤖 Smart RethMatch Bot Starting...");
   console.log("📡 World Address:", WORLD_ADDRESS);
@@ -443,7 +389,6 @@ export async function main() {
   
   const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
   
-  // Use MUD sync system (exactly like example bot)
   const { storedBlockLogs$ } = await syncToStash({
     stash: stash as Stash,
     startSync: true,
@@ -460,7 +405,6 @@ export async function main() {
   
   progressBar.start(100, 0);
   
-  // Subscribe to block updates (exactly like example bot)
   storedBlockLogs$.subscribe(() => {
     const { syncProgress, data } = parseSyncStateGivenTables(stash.get());
     
@@ -484,9 +428,7 @@ export async function main() {
         stopAtTimestampWad: null,
       });
       
-      console.log("\n📥 Got block:", Number(syncProgress.latestBlockNumber));
-      
-      // CALL OUR BOT LOGIC HERE - with real game state!
+      console.log("\n📥 Block:", Number(syncProgress.latestBlockNumber));
       onBlock(liveState, data.gameConfig, timeWad());
       
     } else {
@@ -495,7 +437,6 @@ export async function main() {
     }
   });
   
-  // Graceful shutdown
   process.on('SIGINT', () => {
     console.log("\n\n🛑 Shutting down bot...");
     process.exit(0);
