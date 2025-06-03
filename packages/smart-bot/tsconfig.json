@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*", "rethmatch/packages/*"]
+    }
+  },
+  "include": ["src/smart-bot.ts"],
+  "exclude": ["node_modules", "dist", "**/*.tsx", "rethmatch/packages/client/src/utils/icons.tsx"]
+} 
